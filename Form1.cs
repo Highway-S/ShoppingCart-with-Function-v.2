@@ -2,9 +2,26 @@
 {
     public partial class Form1 : Form
     {
+        // กำหนดราคาเริ่มต้นให้กับแต่ละเมนู
+        private Item coffee = new Item("Coffee", 50);      // ราคาค่าเริ่มต้นสำหรับกาแฟ
+        private Item greenTea = new Item("Green Tea", 100);  // ราคาค่าเริ่มต้นสำหรับชาเขียว
+        private Item noodle = new Item("Noodle", 25);       // ราคาค่าเริ่มต้นสำหรับบะหมี่
+        private Item pizza = new Item("Pizza", 150);        // ราคาค่าเริ่มต้นสำหรับพิซซ่า
+
         public Form1()
         {
             InitializeComponent();
+            // กำหนดราคาเริ่มต้นในแต่ละ TextBox
+            tbCoffeePrice.Text = coffee.Price.ToString("F2");
+            tbGreenTeaPrice.Text = greenTea.Price.ToString("F2");
+            tbNoodlePrice.Text = noodle.Price.ToString("F2");
+            tbPizzaPrice.Text = pizza.Price.ToString("F2");
+
+            tbCoffeeQuantity.Text = "0"; // กำหนดจำนวนเริ่มต้นสำหรับกาแฟ
+            tbGreenTeaQuantity.Text = "0"; // กำหนดจำนวนเริ่มต้นสำหรับชาเขียว
+            tbNoodleQuantity.Text = "0"; // กำหนดจำนวนเริ่มต้นสำหรับบะหมี่
+            tbPizzaQuantity.Text = "0"; // กำหนดจำนวนเริ่มต้นสำหรับพิซซ่า
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -14,69 +31,56 @@
             // คำนวณยอดรวมของเครื่องดื่ม
             if (chbCoffee.Checked)
             {
-                total += คำนวณราคาสินค้า(tbCoffeePrice, tbCoffeeQuantity, "Coffee");
+                coffee.Quantity = int.TryParse(tbCoffeeQuantity.Text, out int coffeeQuantity) ? coffeeQuantity : 0;
+                coffee.Price = double.TryParse(tbCoffeePrice.Text, out double coffeePrice) ? coffeePrice : 0;
+                total += coffee.CalculateTotal();
             }
 
             if (chbGreenTea.Checked)
             {
-                total += คำนวณราคาสินค้า(tbGreenTeaPrice, tbGreenTeaQuantity, "Green Tea");
+                greenTea.Quantity = int.TryParse(tbGreenTeaQuantity.Text, out int greenTeaQuantity) ? greenTeaQuantity : 0;
+                greenTea.Price = double.TryParse(tbGreenTeaPrice.Text, out double greenTeaPrice) ? greenTeaPrice : 0;
+                total += greenTea.CalculateTotal();
             }
 
             // คำนวณยอดรวมของอาหาร
             if (chbNoodle.Checked)
             {
-                total += คำนวณราคาสินค้า(tbNoodlePrice, tbNoodleQuantity, "Noodle");
+                noodle.Quantity = int.TryParse(tbNoodleQuantity.Text, out int noodleQuantity) ? noodleQuantity : 0;
+                noodle.Price = double.TryParse(tbNoodlePrice.Text, out double noodlePrice) ? noodlePrice : 0;
+                total += noodle.CalculateTotal();
             }
 
             if (chbPizza.Checked)
             {
-                total += คำนวณราคาสินค้า(tbPizzaPrice, tbPizzaQuantity, "Pizza");
+                pizza.Quantity = int.TryParse(tbPizzaQuantity.Text, out int pizzaQuantity) ? pizzaQuantity : 0;
+                pizza.Price = double.TryParse(tbPizzaPrice.Text, out double pizzaPrice) ? pizzaPrice : 0;
+                total += pizza.CalculateTotal();
             }
 
             double discountAmount = 0;
+            double discountRate = 0;
 
             // ใช้ส่วนลด
             if (chbDcAll.Checked)
             {
-                // ส่วนลดจากยอดรวมทั้งหมด
-                discountAmount = total * (รับค่าร้อยละส่วนลด(tbDcAll) / 100);
+                discountRate = รับค่าร้อยละส่วนลด(tbDcAll);
+                discountAmount = total * (discountRate / 100);
             }
             else if (chbDcBeverage.Checked)
             {
-                // ส่วนลดจากยอดเฉพาะเครื่องดื่ม
-                double beverageTotal = 0;
-
-                if (chbCoffee.Checked)
-                {
-                    beverageTotal += คำนวณราคาสินค้า(tbCoffeePrice, tbCoffeeQuantity, "Coffee");
-                }
-                if (chbGreenTea.Checked)
-                {
-                    beverageTotal += คำนวณราคาสินค้า(tbGreenTeaPrice, tbGreenTeaQuantity, "Green Tea");
-                }
-
-                discountAmount = beverageTotal * (รับค่าร้อยละส่วนลด(tbDcBeverage) / 100);
+                double beverageTotal = coffee.CalculateTotal() + greenTea.CalculateTotal();
+                discountRate = รับค่าร้อยละส่วนลด(tbDcBeverage);
+                discountAmount = beverageTotal * (discountRate / 100);
             }
             else if (chbDcFood.Checked)
             {
-                // ส่วนลดจากยอดเฉพาะอาหาร
-                double foodTotal = 0;
-
-                if (chbNoodle.Checked)
-                {
-                    foodTotal += คำนวณราคาสินค้า(tbNoodlePrice, tbNoodleQuantity, "Noodle");
-                }
-                if (chbPizza.Checked)
-                {
-                    foodTotal += คำนวณราคาสินค้า(tbPizzaPrice, tbPizzaQuantity, "Pizza");
-                }
-
-                discountAmount = foodTotal * (รับค่าร้อยละส่วนลด(tbDcFood) / 100);
+                double foodTotal = noodle.CalculateTotal() + pizza.CalculateTotal();
+                discountRate = รับค่าร้อยละส่วนลด(tbDcFood);
+                discountAmount = foodTotal * (discountRate / 100);
             }
 
             total -= discountAmount;
-
-            // แสดงยอดรวมหลังหักส่วนลด
             tbTotal.Text = total.ToString("F2");
 
             // ประมวลผลเงินสดและเงินทอน
@@ -98,19 +102,6 @@
             else
             {
                 MessageBox.Show("กรุณากรอกจำนวนเงินสด (Cash) ให้ถูกต้อง");
-            }
-        }
-
-        private double คำนวณราคาสินค้า(TextBox priceTextBox, TextBox quantityTextBox, string itemName)
-        {
-            if (double.TryParse(priceTextBox.Text, out double price) && int.TryParse(quantityTextBox.Text, out int quantity))
-            {
-                return price * quantity;
-            }
-            else
-            {
-                MessageBox.Show($"กรุณากรอกราคาหรือจำนวนของ {itemName} ให้ถูกต้อง");
-                return 0;
             }
         }
 
@@ -136,4 +127,5 @@
             }
         }
     }
+
 }
